@@ -4,51 +4,38 @@ var {height, width} = Dimensions.get('window');
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useState } from 'react';
-import  Svg, {Path} from 'react-native-svg';
-import Like from './icons/like'
-import Unlike from './icons/unlike'
-
-
-
-export default function ParticipantMsg({ participant, body, upVoteCount, id, partid, isAnswered}) {
+import TickBox from './icons/tickBox';
+import TickBoxChecked from './icons/tickBoxChecked';
+export default function PresenterMsg({ participant, body, upVoteCount, id, partid, isAnswered}) {
 
 
   const [qId,setqId]=useState("")
-  const[isVoted,setisVoted] = useState(false)
-
-
-
-
+  const[isAnsweredd,setisAnsweredd] = useState(false)
     return (
       
 
         <View style={styles.container}>
-          <View style={styles.name}>
-          <Text style={styles.text}>{participant.name}</Text>
-          <Text>  asks</Text>
-          {isAnswered ? <Text style={{color:'red', marginRight: width*0.5}}>  Answered</Text> : <Text style></Text>}
-          </View>
+            <Text style={styles.text}>{participant.name} asks</Text>
             <View style={styles.textContainer}>
-            <Text style={[isAnswered ? styles.gray : styles.black]}>{body}</Text>
-          
-           
-            
+            <Text>{body}</Text>
            <View style={styles.rightSide}>
            <Pressable onPress={async()=>{
 
-              let response = await fetch(
-                `http://localhost:8080/api/questions/vote-question/${partid}/${id}`
-              )
+                let response = await fetch(
+                    `http://localhost:8080/api/questions/set-answer/${id}`
+                )
               .then(response => response.json())
               .then(data=>
-                setisVoted(data.status)
+                setisAnsweredd(data.status)
+                // setisAnswered(data.status)
                 )
   
            }}>
-            {isVoted ? <Unlike/> : <Like/>}
+            {isAnswered? <TickBoxChecked/> : <TickBox/>}
+            
            </Pressable>
            <Text style={styles.upvote}>
-              {upVoteCount}
+              {upVoteCount}  
             </Text>
             
            </View>
@@ -68,7 +55,6 @@ export default function ParticipantMsg({ participant, body, upVoteCount, id, par
     
   text:{
     marginBottom: height*0.005,
-    fontWeight: 'bold',
   },    
   container:{
     padding:height*0.01,
@@ -80,7 +66,7 @@ export default function ParticipantMsg({ participant, body, upVoteCount, id, par
     backgroundColor:'#FFFFFF',
     height:height*0.07,
     borderRadius:10,
-    padding:11,
+    padding:8,
     flexDirection:'row', 
     justifyContent:'space-between',
     alignItems:'center',
@@ -88,26 +74,12 @@ export default function ParticipantMsg({ participant, body, upVoteCount, id, par
     
   },
   rightSide:{
-    flexDirection:'column',
     padding:height*0.01,
   },
 
   upvote: {
-    color:'#F44336',
+    color:'red',
     paddingLeft:height*0.03,
-
-  },
-  
-  name:{
-    flexDirection:'row',
-  },
-
-  gray:{
-    color:'#D3D3D3',
-    
-  },
-  black:{
-    color:'#000000',
   }
 
 });

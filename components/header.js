@@ -28,9 +28,9 @@ export default function Header() {
     text:{
     color:'#FFD100',
     textAlign:'center',
-    paddingTop:height*0.02,
-    paddingBottom:height*0.05,
-    fontSize:height*0.02,
+    paddingTop:height*0.01,
+    paddingBottom:height*0.06,
+    fontSize:height*0.03,
   },     
   container:{
     height:height*0.4,

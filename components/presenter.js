@@ -4,14 +4,65 @@ var {height, width} = Dimensions.get('window');
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Header from './header';
+import { useState } from 'react';
 import { TextInput,Button,Pressable } from 'react-native';
 import PresenterChat from './presenterchat';
 export default function Presenter({navigation,control,setControl}) {
+
+  var partId=0;
+
+  const [name,setname]=useState("")
+  const [email,setemail]=useState("")
+  const [connected,setconnected]=useState(false)
+  const [roomName,setroomName]=useState("") 
+ var roomid;
+
+  const connect = async ()=>{
+
+      let addPresenter=await fetch(
+
+        'http://localhost:8080/api/presenters/add-presenter',
+        
+        {
+          method: 'POST',
+          headers:{
+            'Content-Type': 'application/json',
+            mode:'no-cors',
+          },
+          body: JSON.stringify({name})  
+        }
+      )
+      let data=await addPresenter.json();
+
+      let addRoom= await fetch(
+        'http://localhost:8080/api/rooms/add-room',
+        {
+          method: 'POST',
+          headers:{
+            'Content-Type': 'application/json',
+            mode:'no-cors',
+          },       
+            body: JSON.stringify({
+              presenter:{
+                id:data.id
+              }
+        }),
+
+        })
+        let resp=await addRoom.json();
+        console.log('room', resp); 
+        setconnected(true)
+
+    navigation.navigate('PresenterChat',{
+      name,roomid:resp.id,email,connected,partId
+    });
+  
+  }
   return (
     <View style={styles.container}>
         
       <Header/>
-      <Text>PRESENTERRRRRRRRRRRRRR</Text>
+
       <View style={styles.center}>
       <View style={styles.div}> 
 
@@ -26,6 +77,23 @@ export default function Presenter({navigation,control,setControl}) {
 
             </View>
             <View style={styles.downside}>   
+            <Text style={styles.label}>Email</Text>
+                    <TextInput
+                      style={{ 
+                      height: 40, 
+                        backgroundColor: 'white',
+                      borderWidth: 0,
+                        borderRadius: 7,
+                        width:width*0.8,
+                        marginLeft:'auto',
+                        marginRight:'auto',
+                        marginTop: 8,
+                        padding:11,
+                        
+                    }}
+                    onChangeText={newText=> setemail(newText)}
+                    placeholder="Enter your email"
+                    />
             <Text style={styles.label}>Nickname</Text>
             <TextInput
       style={{ 
@@ -40,10 +108,11 @@ export default function Presenter({navigation,control,setControl}) {
         padding:11,
         
     }}
+    onChangeText={newText=> setname(newText)}
 	  placeholder="Enter your nickname"
     />
 
-<Text style={styles.label}>Room ID</Text>
+{/* <Text style={styles.label}>Room ID</Text>
             <TextInput
       style={{ 
     	height: 40, 
@@ -58,10 +127,12 @@ export default function Presenter({navigation,control,setControl}) {
         
     }}
 	  placeholder="J87a12CDa98"
-    />
+    /> */}
 
 <Pressable style={styles.btn} onPress={()=>{
-  navigation.navigate('PresenterChat');
+
+  connect()
+  
 }}>
       <Text style={styles.btnTxt}>Create Session</Text>
     </Pressable>
@@ -113,7 +184,7 @@ const styles = StyleSheet.create({
    
   },
   downside:{
-    marginTop:height*0.03,
+    marginTop:height*0.06,
     backgroundColor:'#FFD100',
     height:height*0.05,
   },

@@ -1,22 +1,48 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View,Image, Dimensions,Pressable,TextInput } from 'react-native';
+import { StyleSheet, Text, View,Image, Dimensions,Pressable,TextInput,FlatList } from 'react-native';
 var {height, width} = Dimensions.get('window');
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import ParticipantMsg from './participantMsg';
-export default function ParticipantChat() {
+import PresenterMsg from './presenterMsg';
+import { useState,useEffect } from 'react';
+
+export default function PresenterChat(props) {
+
+    const name=props.route.params.name;
+    const roomid=props.route.params.roomid;
+    const email=props.route.params.email;
+    const connected=props.route.params.connected;
+    const [questions, setQuestions] = useState([]);
+
+    const getMessages=async()=>{
+        let response= await fetch(
+            `http://localhost:8080/api/questions/get-questions-by-room-id/${roomid}`
+        );
+        let data= await response.json()
+        setQuestions(data)
+    }
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+    
+          getMessages()
+            
+        }, 1000);
+        return()=>clearInterval(interval);
+    },[])
+
+    const renderMessages=({item})=><PresenterMsg body={item.question} participant={item.
+        participant} id={item.id} upVoteCount={item.votedParticipants.length} partid={item.participant.id} isAnswered={item.answered}/>
     return (
         <View style={styles.container}>
 
          <View style={styles.header}>
-            <Text style={styles.title}>Sample Presenter's Session</Text>
+            <Text style={styles.title}>{roomid}</Text>
          </View>
 
          <View style={styles.chat}>
         <View  style={styles.chatItems}>
-        <ParticipantMsg></ParticipantMsg>
-        <ParticipantMsg></ParticipantMsg>
-        <ParticipantMsg></ParticipantMsg>
+        <FlatList style={styles.chatItems} data={questions} renderItem={renderMessages}/>
         </View>
         
 
@@ -56,7 +82,7 @@ export default function ParticipantChat() {
         
         },
         chat:{
-
+            
             backgroundColor:'#D6D6D6',
             height:height*0.84,
 

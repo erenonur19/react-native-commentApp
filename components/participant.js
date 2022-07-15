@@ -6,12 +6,66 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Header from './header';
 import { TextInput,Button,Pressable } from 'react-native';
 import ParticipantChat from './participantchat';
+import { useState } from 'react';
+import { parse } from 'react-native-svg';
 export default function Partipicant({navigation,control,setControl}) {
+
+  // var partId=0;
+
+  const [name,setname]=useState("")
+  const [roomid,setroomid]=useState("")
+  const [email,setemail]=useState("")
+  const [connected,setconnected]=useState(false)
+  // const[roomName,setroomName]=useState("")
+  // const [participantId,setParticipantId]=useState("0")
+  // const [roomName,setroomName]=useState("")
+  var roomName;
+
+  const connect = async () => {
+    let res = await fetch(
+      `http://localhost:8080/api/rooms/get-room-by-id/${roomid}`
+    )
+    .then(res=>res.json())
+    .then(data=>{
+     roomName=data.presenter.name
+    })
+
+    let response = await fetch(
+      `http://localhost:8080/api/rooms/get-room-by-id/${roomid}`
+    )
+    if (response.status === 200) {
+      let addParticipantResponse = await fetch(
+        `http://localhost:8080/api/participants/add-participant`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email }),
+        }
+      );
+      let participantResponse = await addParticipantResponse.json();
+
+      if (addParticipantResponse.status === 200) {
+      
+        setconnected(true)
+        
+        navigation.navigate('ParticipantChat', {name, roomid,email,connected,partId:participantResponse.id,roomName})
+      } else {
+        console.log('This email already been taken');
+      }
+    }
+    if (response.status === 500) {
+      console.log('There is no such a room !');
+    }
+   }
+
+  
+
+
   return (
     <View style={styles.container}>
         
       <Header/>
-      <Text>PARTICIPANTTTTTTTTTTTTTTTTTTTTTTTTTT</Text>
+
       <View style={styles.center}>
       <View style={styles.div}> 
 
@@ -27,7 +81,27 @@ export default function Partipicant({navigation,control,setControl}) {
 
 
             </View>
-            <View style={styles.downside}>   
+            <View style={styles.downside}>
+            <Text style={styles.label}>Email</Text>
+                    <TextInput
+                      style={{ 
+                      height: 40, 
+                        backgroundColor: 'white',
+                      borderWidth: 0,
+                        borderRadius: 7,
+                        width:width*0.8,
+                        marginLeft:'auto',
+                        marginRight:'auto',
+                        marginTop: 8,
+                        padding:11,
+                        
+                    }}
+                      onChangeText={newText=> setemail(newText)}
+                      placeholder="Enter your email"
+                      />
+
+
+
             <Text style={styles.label}>Nickname</Text>
             <TextInput
       style={{ 
@@ -38,12 +112,14 @@ export default function Partipicant({navigation,control,setControl}) {
         width:width*0.8,
         marginLeft:'auto',
         marginRight:'auto',
-        marginTop: 25,
+        marginTop: 8,
         padding:11,
         
     }}
+    onChangeText={newText=> setname(newText)}
 	  placeholder="Enter your nickname"
     />
+    
 
 <Text style={styles.label}>Room ID</Text>
             <TextInput
@@ -55,15 +131,20 @@ export default function Partipicant({navigation,control,setControl}) {
         width:width*0.8,
         marginLeft:'auto',
         marginRight:'auto',
-        marginTop: 25,
+        marginTop: 8,
         padding:11,
         
     }}
+    onChangeText={newText=> setroomid(newText)}
 	  placeholder="Enter room ID"
     />
 
 <Pressable onPress={()=>{
-  navigation.navigate('ParticipantChat');
+
+  connect()
+
+
+  
 }} style={styles.btn}>
       <Text style={styles.btnTxt}>Join Session</Text>
     </Pressable>
@@ -115,7 +196,7 @@ const styles = StyleSheet.create({
    
   },
   downside:{
-    marginTop:height*0.03,
+    marginTop:height*0.02,
     backgroundColor:'#FFD100',
     height:height*0.05,
   },
@@ -149,7 +230,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     marginLeft: 'auto',
     marginRight: 'auto',
-    marginTop:height*0.07
+    marginTop:height*0.05
   },
   btnTxt:{
     color:'#FFD100',
